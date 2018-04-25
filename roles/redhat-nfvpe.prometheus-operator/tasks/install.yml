@@ -1,0 +1,135 @@
+---
+- name: Create temp directory
+  command: mktemp -d /tmp/openshift-ansible-XXXXXXX
+  register: mktemp
+  changed_when: false
+
+- name: Build {{ item.name }} templates
+  template:
+    src: "{{ item.0.name }}/{{ item.1 }}"
+    dest: "{{ mktemp.stdout }}/{{ item.1[:-3] }}"
+  with_subelements:
+    - "{{ promops_templates }}"
+    - tmpl
+
+- name: Create namespace
+  oc_project:
+    state: present
+    name: "{{ promops_deploy.namespace }}"
+
+- name: Create prometheus-operator service account
+  oc_serviceaccount:
+    name: prometheus-operator
+    namespace: "{{ promops_deploy.namespace }}"
+
+- name: Add prometheus-operator SA to SCC
+  oc_adm_policy_user:
+    namespace: "{{ promops_deploy.namespace }}"
+    resource_kind: scc
+    resource_name: privileged
+    state: present
+    user: "system:serviceaccount:{{ promops_deploy.namespace }}:prometheus-operator"
+
+- name: Create prometheus-operator cluster role
+  oc_clusterrole:
+    state: present
+    name: prometheus-operator
+    rules:
+      - apiGroups: ["extensions"]
+        resources: ["thirdpartyresources"]
+        verbs: ["*"]
+      - apiGroups: ["apiextensions.k8s.io"]
+        resources: ["customresourcedefinitions"]
+        verbs: ["*"]
+      - apiGroups: ["monitoring.coreos.com"]
+        resources: ["alertmanagers", "prometheuses",  "prometheuses/finalizers", "alertmanagers/finalizers", "servicemonitors"]
+        verbs: ["*"]
+      - apiGroups: ["apps"]
+        resources: [" statefulsets"]
+        verbs: ["*"]
+      - apiGroups: [""]
+        resources: ["configmaps", "secrets"]
+        verbs: ["*"]
+      - apiGroups: [""]
+        resources: ["pods"]
+        verbs: ["list", "delete"]
+      - apiGroups: [""]
+        resources: ["services", "endpoints"]
+        verbs: ["get", "create", "update"]
+      - apiGroups: [""]
+        resources: ["nodes"]
+        verbs: ["list", "watch"]
+      - apiGroups: [""]
+        resources: ["namespaces"]
+        verbs: ["list"]
+
+- name: Bind prometheus-operator to prometheus-operator service account
+  oc_adm_policy_user:
+    state: present
+    resource_kind: cluster-role
+    resource_name: prometheus-operator
+    user: "system:serviceaccount:{{ promops_deploy.namespace }}:prometheus-operator"
+
+- name: Deploy the operator
+  oc_obj:
+    namespace: "{{ promops_deploy.namespace }}"
+    state: present
+    kind: deployment
+    name: prometheus-operator
+    files:
+      - "{{ mktemp.stdout }}/prometheus-operator.yaml"
+
+#- name: Deploy the operator
+#  command: >
+  #    {{ openshift_client_binary }} create -f {{ mktemp.stdout }}/prometheus-operator.yaml
+  #  --config={{ openshift.common.config_base }}/master/admin.kubeconfig
+
+- name: Wait for Custom Resource Definitions to be available
+  shell: >
+    {{ openshift_client_binary }} get customresourcedefinition {{ item }}.monitoring.coreos.com > /dev/null 2>&1
+  register: crd_check
+  until: crd_check.rc == 0
+  retries: 30
+  delay: 1
+  with_items:
+    - servicemonitors
+    - prometheuses
+    - alertmanagers
+  changed_when: false
+
+#- name: Deploy primary components
+#  command: kubectl -n {{ promops_deploy.namespace }} apply -f {{ item }}
+#  args:
+#    chdir: "{{ ansible_env.HOME }}/promops_tmpl_{{ promops_deploy.name }}"
+#  ignore_errors: true
+#  with_items:
+#    - "{{ promops_deploy.components }}"
+#
+#- name: Deploy Prometheus roles and bindings
+#  command: kubectl apply -f prometheus-roles-bindings/
+#  args:
+#    chdir: "{{ ansible_env.HOME }}/promops_tmpl_{{ promops_deploy.name }}"
+#  ignore_errors: true
+#
+#- name: Deploy service monitors
+#  command: kubectl -n {{ promops_deploy.namespace }} apply -f service-monitors/prometheus-k8s-service-monitor-{{ item }}.yaml
+#  args:
+#    chdir: "{{ ansible_env.HOME }}/promops_tmpl_{{ promops_deploy.name }}"
+#  with_items:
+#    - "{{ promops_deploy.service_monitors }}"
+#
+#- name: Deploy Alertmanager
+#  command: kubectl -n {{ promops_deploy.namespace }} apply -f {{ item }}
+#  args:
+#    chdir: "{{ ansible_env.HOME }}/promops_tmpl_{{ promops_deploy.name }}"
+#  ignore_errors: true
+#  with_items:
+#    - alertmanager
+#  when: promops_deploy.include_alertmanager | default(false) | bool
+#
+#- name: Setup services to monitor Kubernetes components
+#  command: kubectl apply -f k8s/
+#  args:
+#    chdir: "{{ ansible_env.HOME }}/promops_tmpl_{{ promops_deploy.name }}"
+#    ignore_errors: true
+#  when: promops_deploy.monitor_k8s | default(false) | bool

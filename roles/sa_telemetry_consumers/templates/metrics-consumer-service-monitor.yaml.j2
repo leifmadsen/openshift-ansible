@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: metrics-consumer
+  labels:
+    sa-telemetry-app: metrics-consumer
+spec:
+  selector:
+    matchLabels:
+      sa-telemetry-app: metrics-consumer
+  namespaceSelector:
+    matchNames:
+    - {{ sa_telemetry_consumers_namespace }}
+  endpoints:
+  - port: metrics-consumer
+    interval: 4s

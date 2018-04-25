@@ -1,0 +1,41 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: sa
+  labels:
+    prometheus: prometheus-sa-telemetry
+spec:
+  replicas: 1
+  version: v2.2.0-rc.1
+  serviceAccountName: {{ sa_telemetry_prometheus_serviceaccount_name }}
+  serviceMonitorSelector:
+    matchExpressions:
+    - {key: sa-telemetry-app, operator: Exists}
+  securityContext:
+    nonroot: true
+  ruleSelector:
+    matchLabels:
+      role: prometheus-rulefiles
+      prometheus: prometheus-sa-telemetry
+  resources:
+    requests:
+      # 2Gi is default, but won't schedule if you don't have a node with >2Gi
+      # memory. Modify based on your target and time-series count for
+      # production use. This value is mainly meant for demonstration/testing
+      # purposes.
+      memory: 400Mi
+  alerting:
+    alertmanagers:
+    - namespace: {{ sa_telemetry_prometheus_namespace }}
+      name: alertmanager-main
+      port: web
+  storage:
+    class: ""
+    selector: {}
+    resources: {}
+    volumeClaimTemplate:
+      spec:
+        storageClassName: {{ openshift_storage_glusterfs_namespace }}-{{ openshift_storage_glusterfs_name }}
+        resources:
+          requests:
+            storage: 1G
