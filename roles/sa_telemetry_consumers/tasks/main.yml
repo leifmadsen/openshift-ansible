@@ -1,0 +1,47 @@
+---
+- name: ConfigMap for metrics consumer
+  oc_obj:
+    state: present
+    name: metrics-config
+    namespace: "{{ sa_telemetry_consumers_namespace }}"
+    kind: ConfigMap
+    content:
+      path: /tmp/cmout
+      data: "{{ lookup('template', 'metrics-consumer-configmap.yaml.j2') | from_yaml }}"
+
+- name: Deployment for metrics consumer
+  oc_obj:
+    force: yes
+    name: sa-telemetry-metrics-consumer
+    namespace: "{{ sa_telemetry_consumers_namespace }}"
+    kind: deployment
+    content:
+      path: /tmp/dout
+      data: "{{ lookup('template', 'metrics-consumer-deployment.yaml.j2') | from_yaml }}"
+  ignore_errors: true
+
+- name: Service for metrics consumer
+  oc_service:
+    name: metrics-consumer
+    namespace: "{{ sa_telemetry_consumers_namespace }}"
+    labels:
+      sa-telemetry-app: metrics-consumer
+      app: metrics-consumer
+    ports:
+    - name: metrics-consumer
+      port: 8081
+      targetPort: 8081
+      protocol: TCP
+    selector:
+      sa-telemetry-app: metrics-consumer
+
+- name: ServiceMonitor for metrics consumer
+  oc_obj:
+    state: present
+    name: sa-telemetry-metrics-consumer
+    namespace: "{{ sa_telemetry_consumers_namespace }}"
+    kind: ServiceMonitor
+    content:
+      path: /tmp/smout
+      data: "{{ lookup('template', 'metrics-consumer-service-monitor.yaml.j2') | from_yaml }}"
+  ignore_errors: true

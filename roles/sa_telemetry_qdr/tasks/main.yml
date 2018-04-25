@@ -1,0 +1,61 @@
+---
+- name: Create messaging Service
+  oc_service:
+    name: messaging-internal
+    namespace: "{{ sa_telemetry_qdr_namespace }}"
+    labels:
+      app: qdr
+    ports:
+    - name: amqp
+      port: 5672
+    - name: amqps
+      port: 5671
+    selector:
+      type: router
+
+- name: Create external message Service
+  oc_service:
+    name: messaging-external
+    namespace: "{{ sa_telemetry_qdr_namespace }}"
+    labels:
+      app: qdr
+    ports:
+    - name: inter-router
+      port: 20001
+    selector:
+      type: router
+    external_ips:
+    - "{{ sa_telemetry_qdr_external_address }}"
+
+- name: Create QDR ConfigMap
+  oc_obj:
+    name: qdrouterd-config
+    namespace: "{{ sa_telemetry_qdr_namespace }}"
+    state: present
+    kind: ConfigMap
+    content:
+      path: /tmp/cmout
+      data: "{{ lookup('template', 'qdrouterd.conf.j2') | from_yaml }}"
+
+- name: Create QDR Deployment
+  oc_obj:
+    force: yes
+    name: qdr-central-router
+    namespace: "{{ sa_telemetry_qdr_namespace }}"
+    state: present
+    kind: deployment
+    content:
+      path: /tmp/dout
+      data: "{{ lookup('template', 'qdr-deployment.yaml.j2') | from_yaml }}"
+  ignore_errors: true
+
+- name: Create QDR Route
+  oc_route:
+    state: present
+    name: "{{ item.name }}"
+    host: "{{ item.host }}"
+    namespace: "{{ sa_telemetry_qdr_namespace }}"
+    service_name: "{{ item.name }}"
+  with_items:
+    - name: messaging-external
+      host: "{{ sa_telemetry_qdr_hostname }}"
