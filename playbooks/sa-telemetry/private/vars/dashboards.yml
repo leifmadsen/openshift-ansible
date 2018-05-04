@@ -68,7 +68,7 @@ sa_telemetry_grafana_dashboards:
             "rgba(237, 129, 40, 0.89)",
             "#d44a3a"
           ],
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "DS_PROMETHEUS",
           "format": "dtdurations",
           "gauge": {
             "maxValue": null,
@@ -148,7 +148,7 @@ sa_telemetry_grafana_dashboards:
             "rgba(237, 129, 40, 0.89)",
             "#d44a3a"
           ],
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "DS_PROMETHEUS",
           "format": "none",
           "gauge": {
             "maxValue": 4,
@@ -229,7 +229,7 @@ sa_telemetry_grafana_dashboards:
             "rgba(237, 129, 40, 0.89)",
             "#d44a3a"
           ],
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "DS_PROMETHEUS",
           "format": "none",
           "gauge": {
             "maxValue": 4,
@@ -311,7 +311,7 @@ sa_telemetry_grafana_dashboards:
             "rgba(237, 129, 40, 0.89)",
             "#d44a3a"
           ],
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "DS_PROMETHEUS",
           "format": "none",
           "gauge": {
             "maxValue": 4,
@@ -389,7 +389,7 @@ sa_telemetry_grafana_dashboards:
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "DS_PROMETHEUS",
           "fill": 2,
           "gridPos": {
             "h": 7,
@@ -469,7 +469,7 @@ sa_telemetry_grafana_dashboards:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "DS_PROMETHEUS",
           "fill": 1,
           "gridPos": {
             "h": 7,
@@ -556,7 +556,7 @@ sa_telemetry_grafana_dashboards:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "DS_PROMETHEUS",
           "fill": 1,
           "gridPos": {
             "h": 7,
@@ -636,7 +636,7 @@ sa_telemetry_grafana_dashboards:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "DS_PROMETHEUS",
           "decimals": null,
           "fill": 1,
           "gridPos": {
@@ -731,7 +731,7 @@ sa_telemetry_grafana_dashboards:
           {
             "allValue": null,
             "current": {},
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": "DS_PROMETHEUS",
             "hide": 0,
             "includeAll": false,
             "label": "Cloud Nodes",
