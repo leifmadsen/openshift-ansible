@@ -1,5 +1,5 @@
 ---
-grafana_dashboards:
+sa_telemetry_grafana_dashboards:
 - name: deployment-dashboard.json
   content: !unsafe |+
     {
