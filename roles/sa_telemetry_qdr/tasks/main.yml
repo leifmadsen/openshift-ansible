@@ -1,10 +1,11 @@
 ---
 - name: Create messaging Service
   oc_service:
-    name: messaging-internal
+    name: messaging-internal-{{ item }}
     namespace: "{{ sa_telemetry_qdr_namespace }}"
     labels:
-      app: qdr
+      app: qdr-{{ item }}
+      node: "{{ item }}"
     ports:
     - name: amqp
       port: 5672
@@ -12,35 +13,41 @@
       port: 5671
     selector:
       type: router
+      node: "{{ item }}"
+  with_items: "{{ sa_telemetry_node_labels }}"
 
 - name: Create external message Service
   oc_service:
-    name: messaging-external
+    name: messaging-external-{{ item }}
     namespace: "{{ sa_telemetry_qdr_namespace }}"
     labels:
       app: qdr
+      node: "{{ item }}"
     ports:
     - name: inter-router
       port: 20001
     selector:
       type: router
+      node: "{{ item }}"
     external_ips:
     - "{{ sa_telemetry_qdr_external_address }}"
+  with_items: "{{ sa_telemetry_node_labels }}"
 
 - name: Create QDR ConfigMap
   oc_obj:
-    name: qdrouterd-config
+    name: qdrouterd-config-{{ item }}
     namespace: "{{ sa_telemetry_qdr_namespace }}"
     state: present
     kind: ConfigMap
     content:
       path: /tmp/cmout
       data: "{{ lookup('template', 'qdrouterd.conf.j2') | from_yaml }}"
+  with_items: "{{ sa_telemetry_node_labels }}"
 
 - name: Create QDR Deployment
   oc_obj:
     force: yes
-    name: qdr-central-router
+    name: qdr-central-router-{{ item }}
     namespace: "{{ sa_telemetry_qdr_namespace }}"
     state: present
     kind: deployment
@@ -48,14 +55,9 @@
       path: /tmp/dout
       data: "{{ lookup('template', 'qdr-deployment.yaml.j2') | from_yaml }}"
   ignore_errors: true
+  with_items: "{{ sa_telemetry_node_labels }}"
 
-- name: Create QDR Route
-  oc_route:
-    state: present
-    name: "{{ item.name }}"
-    host: "{{ item.host }}"
-    namespace: "{{ sa_telemetry_qdr_namespace }}"
-    service_name: "{{ item.name }}"
-  with_items:
-    - name: messaging-external
-      host: "{{ sa_telemetry_qdr_hostname }}"
+- include_tasks: routes.yml
+  with_items: "{{ sa_telemetry_node_labels }}"
+  loop_control:
+    loop_var: node_label

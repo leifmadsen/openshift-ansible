@@ -1,0 +1,11 @@
+---
+- name: Create QDR Route
+  oc_route:
+    state: present
+    name: "{{ item.name }}"
+    host: "{{ item.host }}"
+    namespace: "{{ sa_telemetry_qdr_namespace }}"
+    service_name: "{{ item.name }}"
+  with_items:
+    - name: messaging-external-{{ node_label }}
+      host: "{{ node_label }}.{{ sa_telemetry_qdr_hostname }}"

@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: qdr
+  name: qdr-{{ item }}
 spec:
   replicas: 1
   template:
@@ -10,9 +10,10 @@ spec:
         app: qdr
         version: v1
         type: router
+        node: {{ item }}
     spec:
       containers:
-      - name: qdr
+      - name: qdr-{{ item }}
         image: nfvpe/qpid-dispatch-router:latest
         imagePullPolicy: IfNotPresent
         ports:
@@ -28,4 +29,6 @@ spec:
       volumes:
       - name: qdrouterd-config
         configMap:
-          name: qdrouterd-config
+          name: qdrouterd-config-{{ item }}
+      nodeSelector:
+        node: {{ item }}

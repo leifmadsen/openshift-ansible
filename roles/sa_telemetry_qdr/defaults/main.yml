@@ -1,4 +1,3 @@
 ---
 sa_telemetry_qdr_hostname: qdr-{{ sa_telemetry_qdr_namespace }}.{{ openshift_master_default_subdomain }}
-sa_telemetry_qdr_external_address: "{{ ansible_default_ipv4.address }}"
 sa_telemetry_qdr_id: "{{ ansible_hostname }}"

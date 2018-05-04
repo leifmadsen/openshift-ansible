@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: qdrouterd-config
+  name: qdrouterd-config-{{ item }}
 data:
   qdrouterd.conf: |+
     # See the qdrouterd.conf (5) manual page for information about this
@@ -9,7 +9,7 @@ data:
 
     router {
         mode: interior
-        id: {{ sa_telemetry_qdr_id }}
+        id: central-qdr-{{ item }}
     }
 
     # This is for _client_ connections (senders and receivers, collectd wirtes to this )
