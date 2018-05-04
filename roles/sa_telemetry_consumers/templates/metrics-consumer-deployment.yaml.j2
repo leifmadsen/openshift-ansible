@@ -32,3 +32,5 @@ spec:
       - name: metrics-config
         configMap:
           name: metrics-config-{{ item }}
+      nodeSelector:
+        node: {{ item }}
