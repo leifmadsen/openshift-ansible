@@ -29,6 +29,14 @@ data:
         saslMechanisms: ANONYMOUS
     }
 
+{% for inter_node_label in sa_telemetry_node_labels if inter_node_label != item %}    connection {
+        role: inter-router
+        host: {{ inter_node_label }}.{{ sa_telemetry_qdr_hostname }}
+        port: 20001
+        saslMechanisms: ANONYMOUS
+    }
+
+{% endfor %}
     # Various address prefix -> distribution pattern
     # configurations:
     #

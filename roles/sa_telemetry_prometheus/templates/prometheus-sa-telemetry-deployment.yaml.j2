@@ -5,7 +5,7 @@ metadata:
   labels:
     prometheus: prometheus-sa-telemetry
 spec:
-  replicas: 1
+  replicas: 2
   version: v2.2.0-rc.1
   serviceAccountName: {{ sa_telemetry_prometheus_serviceaccount_name }}
   serviceMonitorSelector:
@@ -13,6 +13,9 @@ spec:
     - {key: sa-telemetry-app, operator: Exists}
   securityContext:
     nonroot: true
+  nodeSelector:
+    node: blue
+  podAntiAffinity: hard
   ruleSelector:
     matchLabels:
       role: prometheus-rulefiles
