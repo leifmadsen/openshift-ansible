@@ -1,13 +1,13 @@
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: metrics-consumer-{{ item }}
+  name: metrics-consumer-{{ item.name }}
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        sa-telemetry-app: metrics-consumer-{{ item }}
+        sa-telemetry-app: metrics-consumer-{{ item.name }}
     spec:
       securityContext:
         nonroot: true
@@ -31,6 +31,6 @@ spec:
       volumes:
       - name: metrics-config
         configMap:
-          name: metrics-config-{{ item }}
+          name: metrics-config-{{ item.name }}
       nodeSelector:
-        node: {{ item }}
+        node: {{ item.name }}

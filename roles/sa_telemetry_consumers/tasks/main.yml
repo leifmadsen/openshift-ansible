@@ -2,7 +2,7 @@
 - name: ConfigMap for metrics consumer
   oc_obj:
     state: present
-    name: metrics-config-{{ item }}
+    name: metrics-config-{{ item.name }}
     namespace: "{{ sa_telemetry_consumers_namespace }}"
     kind: ConfigMap
     content:
@@ -13,7 +13,7 @@
 - name: Deployment for metrics consumer
   oc_obj:
     force: yes
-    name: sa-telemetry-metrics-consumer-{{ item }}
+    name: sa-telemetry-metrics-consumer-{{ item.name }}
     namespace: "{{ sa_telemetry_consumers_namespace }}"
     kind: deployment
     content:
@@ -24,25 +24,25 @@
 
 - name: Service for metrics consumer
   oc_service:
-    name: metrics-consumer-{{ item }}
+    name: metrics-consumer-{{ item.name }}
     namespace: "{{ sa_telemetry_consumers_namespace }}"
     labels:
       sa-telemetry-app: metrics-consumer
       app: metrics-consumer
-      node: "{{ item }}"
+      node: "{{ item.name }}"
     ports:
     - name: metrics-consumer
       port: 8081
       targetPort: 8081
       protocol: TCP
     selector:
-      sa-telemetry-app: metrics-consumer-{{ item }}
+      sa-telemetry-app: metrics-consumer-{{ item.name }}
   with_items: "{{ sa_telemetry_node_labels }}"
 
 - name: ServiceMonitor for metrics consumer
   oc_obj:
     state: present
-    name: sa-telemetry-metrics-consumer-{{ item }}
+    name: sa-telemetry-metrics-consumer-{{ item.name }}
     namespace: "{{ sa_telemetry_consumers_namespace }}"
     kind: ServiceMonitor
     content:

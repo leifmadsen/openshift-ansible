@@ -27,8 +27,8 @@ data:
         role: inter-router
         authenticatePeer: no
         saslMechanisms: ANONYMOUS
-{% if sa_telemetry_node_labels[(label_index + 1)] is defined %}        failoverList: {{ sa_telemetry_node_labels[(label_index + 1)]['name'] }}.{{ sa_telemetry_qdr_hostname }}{% endif %}
-    }
+{% if sa_telemetry_node_labels[(label_index + 1)] is defined %}        failoverList: {{ sa_telemetry_node_labels[(label_index + 1)]['name'] }}.{{ sa_telemetry_qdr_hostname }}
+{% endif %}    }
 
 {% if sa_telemetry_node_labels[(label_index + 1)] is defined %}    connection {
         role: inter-router
