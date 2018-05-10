@@ -30,7 +30,7 @@ data:
 {% if sa_telemetry_node_labels[(label_index + 1)] is defined %}        failoverList: {{ sa_telemetry_node_labels[(label_index + 1)]['name'] }}.{{ sa_telemetry_qdr_hostname }}
 {% endif %}    }
 
-{% if sa_telemetry_node_labels[(label_index + 1)] is defined %}    connection {
+{% if sa_telemetry_node_labels[(label_index + 1)] is defined %}    connector {
         role: inter-router
         host: {{ sa_telemetry_node_labels[(label_index + 1)]['name'] }}.{{ sa_telemetry_qdr_hostname }}
         port: 20001
